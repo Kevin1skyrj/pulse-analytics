@@ -25,3 +25,6 @@ dist-ssr
 playwright-report
 test-results
 coverage
+dist-server
+.env*
+!.env.example

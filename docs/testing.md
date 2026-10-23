@@ -1,48 +1,67 @@
 # Testing and verification
 
-Run from the repository root after `npm ci --legacy-peer-deps`. Use `npm.cmd` on Windows if needed.
+Release candidate audit: 24 October 2026, Windows, Node 22.16.0, npm 11.4.0, Playwright 1.64.1. Install using `npm ci --legacy-peer-deps`; use `npm.cmd` on Windows if needed. Build before browser tests. Unverified candidate CI is not counted as a pass.
 
-| Command             | Verified result, 24 October 2026                                      |
-| ------------------- | --------------------------------------------------------------------- |
-| `npm run dev`       | Local Vite 5173 and REST/WebSocket 3001 started and exercised         |
-| `npm run lint`      | Passed                                                                |
-| `npm run typecheck` | Passed; also runs inside build                                        |
-| `npm test`          | 4 files, 14 tests passed                                              |
-| `npm run build`     | Passed; strict application/server/config checks and production chunks |
-| `npm run test:e2e`  | 9 Chromium/installed Chrome browser scenarios passed                  |
-| `npm run benchmark` | 5k/100k measurements recorded in performance.md                       |
-| `git diff --check`  | Passed; Windows line-ending notices are informational                 |
+| Gate                      | Recorded local result                                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run lint`            | Passed                                                                                                                                |
+| `npm run typecheck`       | Passed; strict app, server and tool configurations                                                                                    |
+| `npm test`                | 6 files, 23 unit/component/API/security tests passed                                                                                  |
+| `npm run build`           | Passed; SPA and compiled Node output                                                                                                  |
+| `npm run test:e2e`        | 36/36 passed in 3.3 minutes on the compiled candidate; Chromium, Firefox and WebKit                                                   |
+| `npm run test:production` | Passed: compiled public mode, SPA reload, REST restrictions, static allowlist, CSP and actual WS feed                                 |
+| `npm run test:soak`       | Passed: 180 seconds, 100k retained events, two reconnects, 300 display cap, zero clients after close                                  |
+| `npm run benchmark`       | Baseline reproduced; final measurements in performance.md                                                                             |
+| Visual matrices           | 36 before and 36 after captures, zero page overflow in both                                                                           |
+| Repository hygiene        | `git diff --check` passed; 18 Markdown files checked, no broken internal links; package/lockfile versions and dependencies consistent |
 
-## What the tests establish
+The final browser run had zero axe violations across 108 route/theme/width scans, zero page overflow and no captured CSP/uncaught-page errors in the route matrix. Public Settings additionally passed two axe scans at 375/1440 px. These are the tested cases, not proof that every possible interaction is accessible.
 
-`server/data.test.ts` verifies deterministic/schema-valid events, reconciled KPI/bucket/service/severity totals across windows, combined filters, capped/sorted 100k pages, honest empty summaries and incident opening/deduplication/resolution.
+## Unit, component and API coverage
 
-`server/api.test.ts` binds an ephemeral local port and exercises rule validation/create/edit, real WebSocket batches and failure injection/reset. A frozen-clock regression verifies that reopening a resolved incident creates a distinct ID, and the incident browser flow checks for duplicate IDs and console errors. `useStream.test.ts` verifies queue bounds and retry delays. `ui.test.tsx` checks pending/empty distinction and keyboard activation of error retry.
+- `server/data.test.ts`: deterministic/schema-valid events, reconciled KPI/bucket/service/severity totals, combined filters, capped/sorted 100k pages, honest empty summaries and incident evaluation/deduplication.
+- `server/api.test.ts`: rule validation/create/edit, real WebSocket batches, failure injection/reset and rejection of stale incident acknowledgement.
+- `server/security.test.ts`: unsafe environment rejection, public mutation denial, origins, socket cap, request budget, static/source isolation, oversized bodies, methods, loopback Host and malformed URL recovery.
+- `useStream.test.ts`: pure queue bounds and retry delays. `lifecycle.test.tsx`: pending-buffer clear/pause/reset, reconnect scheduling and unmount cleanup with controlled sockets/timers.
+- `ui.test.tsx`: pending/empty distinction and keyboard activation of error retry.
 
-The nine browser scenarios cover:
+## Browser matrix
 
-1. Filter restoration from URLs, virtualization, event metadata and drawer Escape/focus restoration.
-2. Theme/layout persistence, command entry and mobile navigation.
-3. Rule creation, editing and enabled-state feedback.
-4. Live pause/resume and recovery after a real server-side socket disconnect.
-5. API failure/retry and bounded DOM with 100,000 events.
-6. All six routes in both themes with axe WCAG 2 A/AA, 2.1 AA and 2.2 AA tags; no page overflow at 375 and 768 px; no uncaught page errors.
-7. Saved preferences, empty data and incident acknowledgement/resolution.
-8. Secondary sorting controls, column visibility, selection and clipboard output.
-9. Native desktop drag, width changes and default-layout restoration.
+Twelve scenarios run on each of Chromium, Firefox and WebKit (36 tests):
 
-Playwright uses one worker because scenarios share a mutable demo server. Before each scenario it disables streaming/failures and loads 5,000 events. Rules persist until server restart, so tests use unique rule names. Local runs use installed Chrome; CI installs bundled Chromium. Playwright starts the app when needed, or reuses an existing local instance. Failure screenshots/traces are ignored Git artifacts in `test-results/`.
+1. Tab/Shift+Tab dialog containment, Escape/restored focus, visible outline, mobile heading focus and reduced-motion loading behavior.
+2. Exact Analytics snapshot/service propagation into investigation URLs.
+3. Live dataset reset discarding old events without duplicate React keys.
+4. Explorer URL restoration, virtual rows and detail drawer focus.
+5. Theme/layout persistence, command navigation and mobile navigation.
+6. Alert create, edit, enabled-state feedback and persisted reload.
+7. Stream pause/resume and recovery after an actual server-side disconnect.
+8. API failure/retry and fewer than 35 mounted table rows with a 100k dataset/500-row page, then page 2 of 200.
+9. All six routes, two themes and three widths (375/768/1440), axe WCAG 2 A/AA, 2.1 AA and 2.2 AA tags, no page overflow or uncaught page errors: **108 scans across three engines**.
+10. Preferences persistence, empty data and incident acknowledgement/resolution.
+11. Secondary sorting, columns and selection in all engines; clipboard permission/readback **only in Chromium**, because permission support differs across engines.
+12. Native desktop drag, keyboard width/reorder alternatives and default-layout restoration.
 
-## Visual review and reproducibility
+One worker shares one in-memory test service. Each scenario freezes streaming, disables failures and loads 5,000 events. Rules persist within a run, so tests use unique names. Playwright starts a fresh **compiled** local-mode server on port 4175 and stops it afterwards; it refuses to reuse another process. Development HMR and user investigations stay outside release tests. Ports 4174/4175 must be free. Run `npx playwright install firefox webkit` locally with installed Google Chrome; CI installs all three bundled engines with OS dependencies. WebKit on Windows is Playwright's engine, not physical Safari/iOS.
 
-Actual screenshots in `docs/screenshots/` cover all routes plus dark/light, 1440 px desktop, 768 px tablet and 375 px mobile layouts. Run `node scripts/capture-preview.mjs` with a disposable local server running to regenerate them. This script resets its dataset/simulation, uses installed Chrome and re-enables streaming at the end. It preserves existing rules; restart the API first for clean rule screenshots.
+## Visual evidence
 
-During review, fixes included narrow datetime fields overflowing mobile, async rule-switch feedback, virtualized drawer scroll/focus, tablet panel density, contextual empty states and duplicate incident IDs when a frozen simulation clock was reused. Test corrections addressed ambiguous labels/status regions and drag gestures whose destination scrolled the source out of view. The final suite passed after those changes; prior failures are not hidden as passing runs.
+[Before gallery](release-audit/before/index.html) and [after gallery](release-audit/after/index.html) contain every route/theme/width combination with JSON overflow results. Public-mode screenshots additionally show restriction feedback. Older `docs/screenshots/` files remain historical flagship evidence; README uses the release captures.
 
-The sandbox initially blocked Vitest temporary renames; the successful test run used normal local filesystem/socket permissions. npm 11.4 peer resolution required the documented install flag. Neither issue was silently treated as a passing test.
+Run `node scripts/visual-audit.mjs before` or `after` against a disposable local demo. It defaults to port 5173, or accepts `PULSE_AUDIT_URL` pointing to a fresh compiled local server. It changes that server's dataset/simulation and leaves streaming frozen for deterministic images. Do not target public mode or an investigation you need to preserve. This audit's after images use isolated compiled port 4176; before images used baseline Vite. Frozen stream screenshots intentionally show recovery/empty states; live arrivals are verified separately.
+
+## Failure history and corrections
+
+Genuine regressions corrected: clear/pause retained queued arrivals; resets reused live IDs; stale acknowledgement could reopen resolved incidents; WebKit pointer clicks failed to establish a dialog opener; native Tab traversal could reach browser chrome; malformed URLs escaped the request error boundary. Targeted regression tests cover these fixes.
+
+Test corrections: the command locator now uses its actual accessible name; alert-toggle reload waits for persistence rather than optimistic UI; loading checks handle multiple panels. Initial cross-engine runs exposed the focus failures. Forward/reverse keyboard regressions subsequently passed in all engines.
+
+An intermediate full development run was **35/36**: WebKit's Save target detached while Vite reloaded during documentation edits. Its trace recorded new Vite connections and no Save request. Final E2E uses an isolated compiled server. The first compiled run was also **35/36**, revealing Zod's eval probe under Firefox CSP. A validation bootstrap now sets `jitless` before schema imports, preserving the CSP; its focused regression passed. The route matrix also listens for CSP errors. Public smoke initially needed an explicit browser context for axe; the corrected harness passed. Failed runs are not represented as passes.
+
+The sandbox initially blocked filesystem/socket operations; successful checks ran with the necessary local execution permissions. The npm peer-resolver issue is documented in README; an installation failure was not treated as verification.
 
 ## CI and limits
 
-`.github/workflows/ci.yml` installs from the lockfile on Node 22 and runs lint, types, unit tests, build and Chromium E2E, uploading failure artifacts. The workflow has not run on GitHub for these changes because they remain uncommitted and unpushed.
+The committed flagship `b54b2963f50ba7d3b6646e32345550b7f5c2c68d` passed [GitHub Actions run 40012192211](https://github.com/Kevin1skyrj/pulse-analytics/actions/runs/40012192211). That is baseline evidence only. The expanded workflow runs lint, types, unit tests, build, all three engines, public smoke, benchmark and the three-minute soak, uploading failure traces and smoke/soak reports. **Final-candidate GitHub CI awaits the owner's commit/push.**
 
-Automated scans do not certify WCAG compliance. No manual NVDA/VoiceOver pass, Firefox/WebKit matrix, real mobile device run, long-running memory soak, production deployment or concurrency test is claimed. Responsive sizes are browser emulation. Review accessibility.md and tradeoffs.md before making portfolio claims.
+No formal WCAG certification, NVDA/VoiceOver session, real-device pass, sustained concurrency load, day-long browser heap study, external HTTPS/WSS deployment or Docker image build is claimed. Heap samples cover one Node process containing server and test client; they do not measure React browser memory. HTTP-loopback smoke does not prove a hosting proxy's TLS configuration. See [performance](performance.md), [accessibility](accessibility.md) and [deployment](deployment.md).

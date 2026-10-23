@@ -10,7 +10,7 @@ export default function Live() {
     <>
       <PageTitle
         title="Live monitor"
-        description="Follow the stream as it happens. Generated locally, delivered over WebSocket."
+        description="Follow the stream as it happens. Synthetic events delivered over WebSocket."
         actions={
           <>
             <button className="button" onClick={stream.togglePause}>

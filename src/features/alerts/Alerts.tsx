@@ -11,7 +11,7 @@ import {
   type Rule,
   type Incident,
 } from "../../../shared/contracts";
-import { useApi } from "../../services/api";
+import { useApi, useCapabilities } from "../../services/api";
 import {
   saveRule,
   toggleRule,
@@ -151,11 +151,15 @@ function RuleEditor({
   );
 }
 export default function Alerts() {
+  const canMutate = useCapabilities().data?.mutations === true;
   const rules = useApi("/rules", z.array(ruleSchema)),
     history = useApi("/incidents", z.array(incidentSchema), true),
     client = useQueryClient();
   const [editing, setEditing] = useState<Rule | null | undefined>(),
-    [incident, setIncident] = useState<Incident | null>(null);
+    [selectedIncident, setIncident] = useState<Incident | null>(null);
+  const incident =
+    history.data?.find((item) => item.id === selectedIncident?.id) ||
+    selectedIncident;
   const [pendingToggle, setPendingToggle] = useState<{
     id: string;
     enabled: boolean;
@@ -169,9 +173,9 @@ export default function Alerts() {
   });
   const transition = useMutation({
     mutationFn: transitionIncident,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setIncident(data);
-      void client.invalidateQueries();
+      await client.invalidateQueries();
     },
   });
   return (
@@ -180,7 +184,11 @@ export default function Alerts() {
         title="Alerts & incidents"
         description="Turn operational signals into clear, actionable thresholds."
         actions={
-          <button className="button primary" onClick={() => setEditing(null)}>
+          <button
+            className="button primary"
+            disabled={!canMutate}
+            onClick={() => setEditing(null)}
+          >
             <Plus size={16} />
             Create rule
           </button>
@@ -226,7 +234,7 @@ export default function Alerts() {
                       ? pendingToggle.enabled
                       : rule.enabled
                   }
-                  disabled={pendingToggle !== null}
+                  disabled={!canMutate || pendingToggle !== null}
                   onChange={() => {
                     setPendingToggle({ id: rule.id, enabled: !rule.enabled });
                     toggle.mutate(rule);
@@ -237,6 +245,7 @@ export default function Alerts() {
               <button
                 className="icon-button"
                 aria-label={`Edit ${rule.name}`}
+                disabled={!canMutate}
                 onClick={() => setEditing(rule)}
               >
                 <Pencil size={16} />
@@ -295,7 +304,9 @@ export default function Alerts() {
           <div className="flex gap-3">
             <button
               className="button"
-              disabled={incident.state !== "open" || transition.isPending}
+              disabled={
+                !canMutate || incident.state !== "open" || transition.isPending
+              }
               onClick={() =>
                 transition.mutate({ id: incident.id, state: "acknowledged" })
               }
@@ -304,7 +315,11 @@ export default function Alerts() {
             </button>
             <button
               className="button primary"
-              disabled={incident.state === "resolved" || transition.isPending}
+              disabled={
+                !canMutate ||
+                incident.state === "resolved" ||
+                transition.isPending
+              }
               onClick={() =>
                 transition.mutate({ id: incident.id, state: "resolved" })
               }

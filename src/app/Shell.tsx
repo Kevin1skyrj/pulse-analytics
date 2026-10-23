@@ -15,6 +15,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { Dialog } from "../components/ui";
+import { useCapabilities } from "../services/api";
 import { usePreferences, updatePreferences } from "../state/preferences";
 
 const routes = [
@@ -26,6 +27,7 @@ const routes = [
   { path: "/settings", label: "Settings", icon: Settings },
 ];
 export default function Shell() {
+  const capabilities = useCapabilities();
   const preferences = usePreferences(),
     location = useLocation(),
     navigate = useNavigate();
@@ -70,6 +72,12 @@ export default function Shell() {
   return (
     <div
       className={`app-shell ${preferences.collapsed ? "sidebar-collapsed" : ""} ${preferences.compact ? "compact" : ""}`}
+      onClickCapture={(event) => {
+        // WebKit does not focus pointer-clicked buttons by default. Capture the
+        // opener before a modal mounts so Escape can restore focus consistently.
+        if (event.target instanceof Element)
+          event.target.closest("button")?.focus({ preventScroll: true });
+      }}
     >
       <a className="skip-link" href="#main">
         Skip to main content
@@ -93,7 +101,10 @@ export default function Shell() {
         <div className="sidebar-bottom">
           <span className="status-dot" />
           <span>
-            Local simulation<small>No production connection</small>
+            {capabilities.data?.mode === "public"
+              ? "Public demo"
+              : "Local simulation"}
+            <small>Synthetic operational data</small>
           </span>
         </div>
       </aside>
@@ -153,6 +164,24 @@ export default function Shell() {
           </div>
         </header>
         <main id="main" tabIndex={-1}>
+          {capabilities.data?.mode === "public" && (
+            <p className="demo-notice" role="note">
+              <strong>Public read-only demo.</strong> Explore synthetic data and
+              customize this browser. Run Pulse locally to edit alerts or
+              simulation settings.
+            </p>
+          )}
+          {capabilities.error && (
+            <p role="alert" className="error-message mb-4">
+              Workspace permissions could not be loaded. Editing is disabled.{" "}
+              <button
+                className="text-button"
+                onClick={() => void capabilities.refetch()}
+              >
+                Retry permissions
+              </button>
+            </p>
+          )}
           <Suspense
             fallback={
               <div role="status" className="state">

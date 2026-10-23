@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
+import { capabilitiesSchema } from "../../shared/contracts";
 
 export async function request<T>(
   path: string,
@@ -26,4 +27,7 @@ export function useApi<T>(path: string, schema: z.ZodType<T>, poll = false) {
     staleTime: 5000,
     retry: 1,
   });
+}
+export function useCapabilities() {
+  return useApi("/capabilities", capabilitiesSchema);
 }

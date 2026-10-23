@@ -67,3 +67,39 @@ it("supports failure injection and an unaffected reset endpoint", async () => {
   const result = await (await fetch(`${base}/api/events?size=100`)).json();
   expect(result.items).toHaveLength(100);
 });
+it("prevents a stale acknowledgement from reopening a resolved incident", async () => {
+  const rule = await (
+    await fetch(`${base}/api/rules`, {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Transition regression",
+        service: "all",
+        severity: "error",
+        threshold: 1,
+        windowMinutes: 1440,
+        enabled: true,
+      }),
+    })
+  ).json();
+  const history = await (await fetch(`${base}/api/incidents`)).json();
+  const incident = history.find(
+    (item: { ruleId: string }) => item.ruleId === rule.id,
+  );
+  expect(incident).toBeDefined();
+  expect(
+    (
+      await fetch(`${base}/api/incidents/${incident.id}`, {
+        method: "PATCH",
+        body: '{"state":"resolved"}',
+      })
+    ).status,
+  ).toBe(200);
+  expect(
+    (
+      await fetch(`${base}/api/incidents/${incident.id}`, {
+        method: "PATCH",
+        body: '{"state":"acknowledged"}',
+      })
+    ).status,
+  ).toBe(409);
+});

@@ -1,8 +1,10 @@
 # Pulse
 
-A frontend engineering workspace for investigating operational events, service health and incidents. Built with React 19, TypeScript, Vite and Tailwind CSS v4, with a local REST/WebSocket simulator. All data is synthetic and clearly identified in the UI.
+A frontend engineering workspace for investigating operational events, service health and incidents. Built with React 19, TypeScript, Vite and Tailwind CSS v4, with a REST/WebSocket simulator. All data is synthetic and clearly identified in the UI.
 
-![Pulse overview](docs/screenshots/overview-dark.png)
+![Pulse overview](docs/release-audit/after/overview-dark-1440.png)
+
+**Status: v1.0 release candidate (`1.0.0-rc.1`), not released.** The flagship is committed at `b54b296`; its [first GitHub Actions run passed](https://github.com/Kevin1skyrj/pulse-analytics/actions/runs/40012192211). Release hardening is on `codex/v1-release-hardening`. The owner will commit/push it; final-candidate CI remains a mandatory gate. [Release checklist](docs/release-checklist.md).
 
 ## Run locally
 
@@ -17,7 +19,16 @@ Open http://127.0.0.1:5173. One command starts Vite and the TypeScript API serve
 
 The install flag is intentional: npm 11.4's peer resolver crashed while resolving the test tooling. The lockfile was generated with legacy peer resolution; application types, builds and runtime tests were then verified. It is not a claim that every package's declared peer range includes the newest preserved stack versions.
 
-For a production-asset preview, build first, run `npm run dev:api` in one terminal and `npm run preview` in another. The preview still needs the local API; deploying only `dist/` will not provide the simulator. No hosted deployment is included.
+For a production preview, stop the development API on port 3001, then run:
+
+```sh
+npm run build
+npm start
+```
+
+Open http://127.0.0.1:3001. The compiled Node server serves `dist/`, REST, WebSockets and SPA deep links on one origin. Local mode keeps alert/simulation editing available and refuses non-loopback binding. `npm run preview` remains an optional Vite asset preview requiring a separate development API; it is not the deployment entry point.
+
+For hosting, use **public read-only mode** with a configured HTTPS origin. Alerts/simulation writes are denied by the server; browser preferences still work. [Exact deployment instructions and configuration](docs/deployment.md). No hosted service has been deployed.
 
 ## What works
 
@@ -32,7 +43,7 @@ For a production-asset preview, build first, run `npm run dev:api` in one termin
 | Customization  | Native desktop dragging, keyboard reorder buttons, grid width controls, visibility, persisted layout, restore defaults                                      |
 | Productivity   | Ctrl/Command+K command entry, route and event search, persisted theme/workspace/density, simulation controls                                                |
 
-## A five-minute demonstration
+## A five-minute local demonstration
 
 1. Open **Overview**. Compare the total with chart bucket totals using **View accessible chart data**.
 2. Open **Analytics**, choose a service and time window, then **Investigate events**. The selected window and service carry into the explorer URL.
@@ -52,17 +63,20 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npx playwright install firefox webkit
 npm run test:e2e
+npm run test:production
 npm run benchmark
+npm run test:soak
 ```
 
-Local E2E tests use installed Google Chrome. CI installs Playwright Chromium. Browser tests reset the local dataset and simulation settings, so run them against a disposable demo instance, not an investigation you want to preserve. If the app is not running, Playwright starts it automatically.
+Local E2E tests use installed Google Chrome plus Playwright Firefox and WebKit. CI installs all three Playwright engines. Build first: Playwright starts its own compiled local-mode server on port 4175 with fresh in-memory state, then stops it. The suite never reuses your development server. The public-mode production smoke uses port 4174; the soak uses an ephemeral port. Keep those test ports free.
 
-Verified on 24 October 2026: lint, strict types and production build passed; 14 unit/component/API tests and 9 browser scenarios passed. The browser suite checks six routes in both themes with axe, mobile/tablet page overflow and critical workflows. This is not a formal accessibility certification. [Exact coverage and limitations](docs/testing.md).
+Verification includes lint, strict types, production build, 23 unit/component/API tests, a 36-scenario browser matrix, production smoke and a three-minute stream soak. Each browser scans all six routes in both themes at 375/768/1440 px with axe and page-overflow assertions. This is not a formal accessibility certification. [Recorded results, exact coverage and limitations](docs/testing.md).
 
-The reproducible local 100k benchmark measured **153.37 ms median** for filtering, sorting and summary computation; that is a Node CPU measurement, not end-to-end browser latency. [Conditions and bundle costs](docs/performance.md).
+The reproducible 5k/100k benchmark measures filtering, sorting and summary computation in Node, not end-to-end browser latency. The stream soak exercises 100k retained events and bounded buffers. [Measured results, conditions and bundle costs](docs/performance.md).
 
-GitHub Actions is configured in `.github/workflows/ci.yml`. Remote CI has not run for this uncommitted implementation.
+GitHub Actions is configured in `.github/workflows/ci.yml`. Baseline CI passed; the expanded release workflow must pass on the owner's final candidate commit before tagging.
 
 ## Architecture and dependencies
 
@@ -86,6 +100,6 @@ TanStack Virtual bounds mounted rows, Recharts supplies responsive charts/toolti
 
 ## Honest boundaries
 
-This is a complete local frontend demonstration, not a deployed multi-tenant monitoring service. Rules/incidents are in memory and reset on server restart. Preferences are browser-local. Event retention is 100,000; live display is 300. Reconnection resumes future messages without cursor replay; retained gaps remain searchable over REST. There is no authentication, durable ingestion, notification delivery or production deployment. Broader browser and manual screen-reader testing remain future work.
+This is a frontend demonstration with local mutable and public read-only modes. Rules/incidents are in memory and reset on server restart; public data resets every 24 hours of process uptime. Preferences are browser-local. Event retention is 100,000; live display is 300. Reconnection resumes future messages without cursor replay; retained gaps remain searchable over REST. There is no authentication, durable ingestion, notification delivery or deployed service. Manual screen-reader, real-device and extended browser-heap verification remain future work.
 
-See [delivery report](docs/delivery-report.md) for the feature matrix, verification evidence, important files and Git ownership. The existing baseline is `d7a1abd`; this implementation is deliberately **uncommitted**. Commits and pushes remain the repository owner's responsibility.
+See [delivery report](docs/delivery-report.md), [before/after audit](docs/release-audit.md), [release notes](docs/release-notes.md) and [release checklist](docs/release-checklist.md). Module 02 was `d7a1abd`; the flagship is `b54b296`. Only the current hardening changes remain uncommitted. Commits and pushes remain the repository owner's responsibility.

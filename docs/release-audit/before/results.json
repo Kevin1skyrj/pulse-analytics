@@ -1,0 +1,254 @@
+[
+  {
+    "name": "overview",
+    "theme": "dark",
+    "width": 375,
+    "file": "overview-dark-375.png",
+    "overflow": false
+  },
+  {
+    "name": "events",
+    "theme": "dark",
+    "width": 375,
+    "file": "events-dark-375.png",
+    "overflow": false
+  },
+  {
+    "name": "live",
+    "theme": "dark",
+    "width": 375,
+    "file": "live-dark-375.png",
+    "overflow": false
+  },
+  {
+    "name": "analytics",
+    "theme": "dark",
+    "width": 375,
+    "file": "analytics-dark-375.png",
+    "overflow": false
+  },
+  {
+    "name": "alerts",
+    "theme": "dark",
+    "width": 375,
+    "file": "alerts-dark-375.png",
+    "overflow": false
+  },
+  {
+    "name": "settings",
+    "theme": "dark",
+    "width": 375,
+    "file": "settings-dark-375.png",
+    "overflow": false
+  },
+  {
+    "name": "overview",
+    "theme": "dark",
+    "width": 768,
+    "file": "overview-dark-768.png",
+    "overflow": false
+  },
+  {
+    "name": "events",
+    "theme": "dark",
+    "width": 768,
+    "file": "events-dark-768.png",
+    "overflow": false
+  },
+  {
+    "name": "live",
+    "theme": "dark",
+    "width": 768,
+    "file": "live-dark-768.png",
+    "overflow": false
+  },
+  {
+    "name": "analytics",
+    "theme": "dark",
+    "width": 768,
+    "file": "analytics-dark-768.png",
+    "overflow": false
+  },
+  {
+    "name": "alerts",
+    "theme": "dark",
+    "width": 768,
+    "file": "alerts-dark-768.png",
+    "overflow": false
+  },
+  {
+    "name": "settings",
+    "theme": "dark",
+    "width": 768,
+    "file": "settings-dark-768.png",
+    "overflow": false
+  },
+  {
+    "name": "overview",
+    "theme": "dark",
+    "width": 1440,
+    "file": "overview-dark-1440.png",
+    "overflow": false
+  },
+  {
+    "name": "events",
+    "theme": "dark",
+    "width": 1440,
+    "file": "events-dark-1440.png",
+    "overflow": false
+  },
+  {
+    "name": "live",
+    "theme": "dark",
+    "width": 1440,
+    "file": "live-dark-1440.png",
+    "overflow": false
+  },
+  {
+    "name": "analytics",
+    "theme": "dark",
+    "width": 1440,
+    "file": "analytics-dark-1440.png",
+    "overflow": false
+  },
+  {
+    "name": "alerts",
+    "theme": "dark",
+    "width": 1440,
+    "file": "alerts-dark-1440.png",
+    "overflow": false
+  },
+  {
+    "name": "settings",
+    "theme": "dark",
+    "width": 1440,
+    "file": "settings-dark-1440.png",
+    "overflow": false
+  },
+  {
+    "name": "overview",
+    "theme": "light",
+    "width": 375,
+    "file": "overview-light-375.png",
+    "overflow": false
+  },
+  {
+    "name": "events",
+    "theme": "light",
+    "width": 375,
+    "file": "events-light-375.png",
+    "overflow": false
+  },
+  {
+    "name": "live",
+    "theme": "light",
+    "width": 375,
+    "file": "live-light-375.png",
+    "overflow": false
+  },
+  {
+    "name": "analytics",
+    "theme": "light",
+    "width": 375,
+    "file": "analytics-light-375.png",
+    "overflow": false
+  },
+  {
+    "name": "alerts",
+    "theme": "light",
+    "width": 375,
+    "file": "alerts-light-375.png",
+    "overflow": false
+  },
+  {
+    "name": "settings",
+    "theme": "light",
+    "width": 375,
+    "file": "settings-light-375.png",
+    "overflow": false
+  },
+  {
+    "name": "overview",
+    "theme": "light",
+    "width": 768,
+    "file": "overview-light-768.png",
+    "overflow": false
+  },
+  {
+    "name": "events",
+    "theme": "light",
+    "width": 768,
+    "file": "events-light-768.png",
+    "overflow": false
+  },
+  {
+    "name": "live",
+    "theme": "light",
+    "width": 768,
+    "file": "live-light-768.png",
+    "overflow": false
+  },
+  {
+    "name": "analytics",
+    "theme": "light",
+    "width": 768,
+    "file": "analytics-light-768.png",
+    "overflow": false
+  },
+  {
+    "name": "alerts",
+    "theme": "light",
+    "width": 768,
+    "file": "alerts-light-768.png",
+    "overflow": false
+  },
+  {
+    "name": "settings",
+    "theme": "light",
+    "width": 768,
+    "file": "settings-light-768.png",
+    "overflow": false
+  },
+  {
+    "name": "overview",
+    "theme": "light",
+    "width": 1440,
+    "file": "overview-light-1440.png",
+    "overflow": false
+  },
+  {
+    "name": "events",
+    "theme": "light",
+    "width": 1440,
+    "file": "events-light-1440.png",
+    "overflow": false
+  },
+  {
+    "name": "live",
+    "theme": "light",
+    "width": 1440,
+    "file": "live-light-1440.png",
+    "overflow": false
+  },
+  {
+    "name": "analytics",
+    "theme": "light",
+    "width": 1440,
+    "file": "analytics-light-1440.png",
+    "overflow": false
+  },
+  {
+    "name": "alerts",
+    "theme": "light",
+    "width": 1440,
+    "file": "alerts-light-1440.png",
+    "overflow": false
+  },
+  {
+    "name": "settings",
+    "theme": "light",
+    "width": 1440,
+    "file": "settings-light-1440.png",
+    "overflow": false
+  }
+]

@@ -1,8 +1,8 @@
-# Pulse flagship implementation
+# Pulse flagship implementation — historical plan
 
 ## Ownership
 
-The user owns commits and pushes. All work in this iteration remains uncommitted.
+The user owns commits and pushes. The flagship milestones below were committed at `b54b296` and passed baseline GitHub CI. This document preserves the original implementation sequence. Current release hardening and its pending gates are recorded in [release-audit.md](release-audit.md) and [release-checklist.md](release-checklist.md).
 
 ## Starting point
 
@@ -38,4 +38,4 @@ Lint, strict type checks, unit/component tests, production build, browser flows,
 
 ## Completion
 
-All nine milestones are implemented locally. Verification and limitations are recorded in delivery-report.md, testing.md and performance.md. All eleven requested technical documents are present. The working tree is intentionally uncommitted; repository ownership and publishing remain with the user.
+All nine flagship milestones are implemented and committed. Verification and limitations are recorded in delivery-report.md, testing.md and performance.md. All eleven requested technical documents are present. The current hardening branch is a separate, owner-controlled release candidate; it is not a completed v1.0 release.

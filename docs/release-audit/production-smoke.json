@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "mode": "public",
+  "transport": "HTTP loopback; external TLS not exercised",
+  "checks": [
+    "compiled server startup",
+    "SPA deep links/reload",
+    "read-only REST and UI",
+    "static source protection",
+    "CSP without browser errors",
+    "real WebSocket feed",
+    "browser-local preferences enabled",
+    "public settings axe and overflow at 375/1440px"
+  ]
+}
