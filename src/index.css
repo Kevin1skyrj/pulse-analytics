@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-indigo-600);
+    outline-offset: 4px;
+  }
+
+  ::selection {
+    background-color: var(--color-indigo-100);
+    color: var(--color-indigo-950);
+  }
+}
