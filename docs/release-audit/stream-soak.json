@@ -1,0 +1,60 @@
+{
+  "node": "v22.16.0",
+  "platform": "win32",
+  "durationSeconds": 180,
+  "received": 531,
+  "retained": 300,
+  "clientsAfterClose": 0,
+  "explicitGC": true,
+  "samples": [
+    {
+      "elapsedSeconds": 0,
+      "heapMiB": 54.01,
+      "retained": 0,
+      "serverEvents": 100000,
+      "clients": 1
+    },
+    {
+      "elapsedSeconds": 30,
+      "heapMiB": 52.72,
+      "retained": 87,
+      "serverEvents": 100000,
+      "clients": 1
+    },
+    {
+      "elapsedSeconds": 60,
+      "heapMiB": 52.75,
+      "retained": 177,
+      "serverEvents": 100000,
+      "clients": 1
+    },
+    {
+      "elapsedSeconds": 90,
+      "heapMiB": 52.87,
+      "retained": 267,
+      "serverEvents": 100000,
+      "clients": 1
+    },
+    {
+      "elapsedSeconds": 120,
+      "heapMiB": 52.87,
+      "retained": 300,
+      "serverEvents": 100000,
+      "clients": 1
+    },
+    {
+      "elapsedSeconds": 150,
+      "heapMiB": 52.91,
+      "retained": 300,
+      "serverEvents": 100000,
+      "clients": 1
+    },
+    {
+      "elapsedSeconds": 180,
+      "heapMiB": 52.9,
+      "retained": 300,
+      "serverEvents": 100000,
+      "clients": 1
+    }
+  ]
+}

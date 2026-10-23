@@ -1,4 +1,15 @@
-@import "tailwindcss";
+/* Keep documentation and audit artifacts out of utility-class detection. */
+@import "tailwindcss" source(".");
+
+.demo-notice {
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  font-size: 13px;
+  line-height: 1.6;
+}
 
 @theme inline {
   --color-canvas: var(--canvas);

@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-24",
+  "status": "local candidate verified; final commit CI pending",
+  "baselineCommit": "b54b2963f50ba7d3b6646e32345550b7f5c2c68d",
+  "baselineCI": "https://github.com/Kevin1skyrj/pulse-analytics/actions/runs/40012192211",
+  "branch": "codex/v1-release-hardening",
+  "candidateCommit": null,
+  "candidateCI": null,
+  "lint": "passed",
+  "strictTypes": "passed",
+  "productionBuild": "passed",
+  "unitComponentAPI": { "files": 6, "passed": 23 },
+  "browser": {
+    "passed": 36,
+    "engines": ["chromium", "firefox", "webkit"],
+    "routeAxeScans": 108,
+    "axeViolations": 0,
+    "pageOverflows": 0,
+    "server": "isolated compiled local mode, port 4175"
+  },
+  "publicSmoke": {
+    "passed": true,
+    "additionalSettingsAxeScans": 2,
+    "transport": "HTTP loopback; external TLS/WSS unverified"
+  },
+  "visual": { "beforeViews": 36, "afterViews": 36, "overflows": 0 },
+  "streamSoak": {
+    "seconds": 180,
+    "received": 531,
+    "retained": 300,
+    "serverEvents": 100000,
+    "clientsAfterClose": 0
+  },
+  "repository": {
+    "whitespace": "passed",
+    "markdownFilesChecked": 18,
+    "brokenInternalLinks": 0,
+    "packageLockConsistency": "passed"
+  },
+  "deployment": "not performed",
+  "dockerImage": "not built; engine unavailable",
+  "releaseTag": "not created"
+}

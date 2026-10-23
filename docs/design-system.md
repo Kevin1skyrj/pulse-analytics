@@ -2,7 +2,7 @@
 
 The interface is dark-primary, compact, and designed around operational investigation. Color is functional: violet for selected navigation/actions, green for healthy/processed, amber for warning/degraded, red for failed/critical and blue for informational signals. Status text accompanies color.
 
-Tokens live in `src/index.css`; Tailwind v4 `@theme inline` exposes the semantic values to utility classes. Dark/light modes switch the same token names, not component markup.
+Tokens live in `src/index.css`; Tailwind v4 `@theme inline` exposes the semantic values to utility classes. Dark/light modes switch the same token names, not component markup. The Tailwind import explicitly scopes class detection to `src`, keeping documentation and audit artifacts from altering generated utilities ([source detection](https://tailwindcss.com/docs/detecting-classes-in-source-files)).
 
 | Token       | Dark    | Light   |
 | ----------- | ------- | ------- |

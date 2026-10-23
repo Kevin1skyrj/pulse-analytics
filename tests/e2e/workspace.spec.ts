@@ -105,6 +105,10 @@ test("creates, edits and toggles a real alert rule", async ({ page }) => {
   await expect(
     page.getByRole("checkbox", { name: `Enable ${editedName}` }),
   ).not.toBeChecked();
+  // The immediate checkbox update is optimistic; reload only after persistence.
+  await expect(
+    page.getByRole("checkbox", { name: `Enable ${editedName}` }),
+  ).toBeEnabled();
   await page.reload();
   await expect(
     page.getByRole("checkbox", { name: `Enable ${editedName}` }),
@@ -163,12 +167,16 @@ test("API errors can be recovered and 100k rows stay bounded", async ({
   await expect(page.getByText("Page 2 of 200")).toBeVisible();
 });
 
-test("all routes fit mobile and tablet, with accessible dark and light themes", async ({
+test("all routes fit mobile, tablet and desktop, with accessible dark and light themes", async ({
   page,
 }) => {
-  test.setTimeout(120000);
+  test.setTimeout(240000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (/content.security.policy|unsafe-eval/i.test(message.text()))
+      errors.push(message.text());
+  });
   for (const theme of ["dark", "light"]) {
     await page.goto("/settings");
     await page
@@ -194,17 +202,20 @@ test("all routes fit mobile and tablet, with accessible dark and light themes", 
         await expect(
           page.locator("tbody tr[aria-rowindex]").first(),
         ).toBeVisible();
-      const results = await new AxeBuilder({ page })
-        .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
-        .analyze();
-      expect(
-        results.violations.map((v) => ({
-          id: v.id,
-          nodes: v.nodes.map((n) => n.target),
-        })),
-      ).toEqual([]);
-      for (const width of [375, 768]) {
-        await page.setViewportSize({ width, height: 900 });
+      await expect(
+        page.getByText("Loading workspace data…", { exact: true }),
+      ).toHaveCount(0);
+      for (const width of [375, 768, 1440]) {
+        await page.setViewportSize({ width, height: 1000 });
+        const results = await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+          .analyze();
+        expect(
+          results.violations.map((v) => ({
+            id: v.id,
+            nodes: v.nodes.map((n) => n.target),
+          })),
+        ).toEqual([]);
         expect(
           await page.evaluate(
             () =>
@@ -283,11 +294,13 @@ test("settings persist, empty data is honest, and incident actions work", async 
   expect(consoleErrors).toEqual([]);
 });
 
-test("sorting, column visibility, selection and clipboard use real event data", async ({
+test("sorting, columns and selection use real data; Chromium verifies clipboard", async ({
   page,
   context,
+  browserName,
 }) => {
-  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  if (browserName === "chromium")
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/events?size=500");
   await page
     .getByRole("combobox", { name: "Sort by", exact: true })
@@ -300,13 +313,15 @@ test("sorting, column visibility, selection and clipboard use real event data", 
   await page
     .getByRole("checkbox", { name: "Select current page", exact: true })
     .check();
-  await page.getByRole("button", { name: "Copy selected IDs" }).click();
-  await expect(page.getByRole("status").last()).toHaveText(
-    "500 event IDs copied",
-  );
-  expect(
-    (await page.evaluate(() => navigator.clipboard.readText())).split("\n"),
-  ).toHaveLength(500);
+  if (browserName === "chromium") {
+    await page.getByRole("button", { name: "Copy selected IDs" }).click();
+    await expect(page.getByRole("status").last()).toHaveText(
+      "500 event IDs copied",
+    );
+    expect(
+      (await page.evaluate(() => navigator.clipboard.readText())).split("\n"),
+    ).toHaveLength(500);
+  }
   await page.getByText("Columns", { exact: true }).click();
   await page.getByRole("checkbox", { name: "duration", exact: true }).uncheck();
   await expect(

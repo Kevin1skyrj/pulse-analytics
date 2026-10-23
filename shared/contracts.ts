@@ -85,3 +85,7 @@ export const infoSchema = simulationSchema.extend({
   anchor: z.string(),
 });
 export type Simulation = z.infer<typeof simulationSchema>;
+export const capabilitiesSchema = z.object({
+  mode: z.enum(["local", "public"]),
+  mutations: z.boolean(),
+});

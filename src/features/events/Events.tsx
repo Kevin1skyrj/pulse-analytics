@@ -29,6 +29,7 @@ export default function Events() {
     count: data?.items.length || 0,
     getScrollElement: () => scroll.current,
     estimateSize: () => (preferences.compact ? 40 : 48),
+    getItemKey: (index) => data?.items[index]?.id || index,
     overscan: 6,
     useFlushSync: false,
   });

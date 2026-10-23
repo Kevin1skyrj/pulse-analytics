@@ -16,12 +16,17 @@ The simulation clock advances one second per stream tick, not with the wall-cloc
 | `GET/PATCH /api/simulation`                      | Latency, every-Nth-request failures, stream enabled state                            |
 | `POST /api/dataset`                              | Load 0, 5,000 or 100,000 events                                                      |
 | `GET /api/health`                                | Health probe exempt from simulated failures                                          |
-| `WS /ws`                                         | Validated `{type: 'events', events: PulseEvent[]}` batches                           |
+| `GET /api/capabilities`                          | Public/local mode and mutation permission                                            |
+| `WS /ws`                                         | Validated event batches or `{type: 'reset'}` to discard an old feed epoch            |
+
+Mutation endpoints are available only in local mode. Public mode rejects all methods except GET/HEAD with 403, including requests without Origin. It also enforces an API budget and exact browser/WS origin checks. Public dataset resets run every 24 hours of uptime. Reset clears client pending/display buffers; random epoch IDs prevent live identifier reuse across datasets and process restarts.
 
 Summary windows are `(end - span, end]`; the comparison is the preceding equal window. Error rate means `(error + critical) / event count`. Active users means distinct user IDs. Throughput means events per minute across the entire selected span. Service health is degraded above 10% errors, healthy at or below it, and "no data" for empty services. These are explicit demo policies.
 
 Alerts count events at or above their severity within a sliding window relative to the simulation clock. A rule opens one unresolved incident, resolves it below threshold, and may reopen after manual resolution if still breached. Disabling a rule stops evaluation; it does not erase history. History is capped at 200.
 
+Acknowledgement is valid only for open incidents. A stale acknowledgement of a resolved incident returns 409, rather than reopening it. Rules are capped at 100 in local mode; public visitors cannot create or modify them.
+
 ## Streaming recovery
 
-The browser batches incoming events every 500 ms, retains 300 displayed events, and bounds pending events to 300. Pausing keeps connection/counting active but drops paused arrivals from the visual feed. Resume shows subsequent arrivals. Recovery backs off 1, 2, 4, 8, 16, then 30 seconds, with eight automatic attempts; a valid batch resets the attempt count. Reconnect manually restarts the attempt budget. Missed intervals can be investigated in the retained REST dataset; there is no automatic cursor replay protocol.
+The browser batches incoming events every 500 ms, retains 300 displayed events, and bounds pending events to 300. Clear and pause discard pending arrivals immediately. Pausing keeps connection/counting active but drops paused arrivals from the visual feed. Resume shows subsequent arrivals. Recovery backs off 1, 2, 4, 8, 16, then 30 seconds, with eight automatic attempts; a valid batch resets the attempt count. Reconnect manually restarts the attempt budget. Unmount clears timers, closes the socket and guards late callbacks. Missed intervals can be investigated in the retained REST dataset; there is no automatic cursor replay protocol.

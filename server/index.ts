@@ -1,10 +1,22 @@
 import { createPulseServer } from "./app.js";
-const size = Number(process.env.PULSE_SIZE || 5000);
-if (![0, 5000, 100000].includes(size))
-  throw new Error("PULSE_SIZE must be 0, 5000 or 100000");
-const app = createPulseServer(size);
-app.server.listen(Number(process.env.PORT || 3001), "127.0.0.1", () =>
-  console.log("Pulse simulation: http://127.0.0.1:3001"),
+import { runtimeConfig } from "./config.js";
+import { accessSync } from "node:fs";
+import { join } from "node:path";
+const config = runtimeConfig({
+  ...process.env,
+  ...(process.argv.includes("--serve") ? { PULSE_SERVE_STATIC: "1" } : {}),
+});
+if (config.staticDir) accessSync(join(config.staticDir, "index.html"));
+const app = createPulseServer(config.size, config);
+app.server.on("error", (error) => {
+  console.error(`Pulse could not start: ${error.message}`);
+  app.close();
+  process.exitCode = 1;
+});
+app.server.listen(config.port, config.host, () =>
+  console.log(
+    `Pulse ${config.publicDemo ? "public read-only demo" : "local simulation"}: http://${config.host}:${config.port}`,
+  ),
 );
 process.on("SIGINT", () => app.close());
 process.on("SIGTERM", () => app.close());

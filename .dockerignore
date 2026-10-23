@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-server
+.git
+.codex
+.agents
+.env*
+!.env.example
+test-results
+playwright-report
+docs/release-audit
+docs/screenshots

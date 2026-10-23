@@ -20,11 +20,13 @@
 
 **Why cap buffers?** A real-time tab may stay open for hours. The display and pending queues both cap at 300; server history caps at 100k. Bounded memory matters more than showing every old row.
 
-**Why native dialogs?** showModal provides a platform top layer, inert background and focus containment. I add naming, Escape/Close behavior and trigger restoration, and verify them in browser tests.
+**Why native dialogs?** showModal provides a platform top layer and inert background. Cross-browser tests showed that explicit Tab wrapping and pointer-opener focus were still necessary. I add those, naming, Escape/Close behavior and trigger restoration, then verify the behavior in three engines.
 
 **What is the alert policy?** Count events at or above a severity in a sliding simulated time window. Open one unresolved incident at the threshold; resolve below it. Manual resolution may retrigger while breached. No external notification service is fabricated.
 
-**What would you change for production?** Durable ingest/storage, authentication and tenancy, rate limiting, cursor-based queries, resilient replay, operational metrics, deployment hardening and broader browser/assistive-technology validation. Those are explicit limits of this frontend-focused demonstration.
+**How is the public demo safe to share?** Public mode independently rejects mutation methods on the server, requires an exact browser/socket origin and caps requests, connections and retained data. Visitors share synthetic reads while browser preferences stay local. Disabled controls communicate the restriction; they are not the security boundary. Hosting still needs HTTPS/WSS and external verification.
+
+**What would you change for production?** Durable ingest/storage, authentication and tenancy, fair per-tenant quotas and edge abuse controls, cursor-based queries, resilient replay, operational metrics, concurrency testing and assistive-technology validation. Those are explicit limits of this frontend-focused demonstration.
 
 **Why not memoize everything?** Memoization has costs and can conceal incorrect ownership. Route splitting, server filtering, bounded buffers and virtualization solve identified costs; add memoization only after profiling a concrete bottleneck.
 

@@ -1,10 +1,10 @@
 # Pulse delivery report
 
-Delivered locally on 24 October 2026. All implementation work remains uncommitted. No push, pull request or hosted deployment was performed for this iteration.
+Release candidate prepared locally on 24 October 2026. The flagship is committed at `b54b296`; this hardening work remains uncommitted on `codex/v1-release-hardening`. No commit, push, tag, pull request or external deployment was performed by the agent. **v1.0 is not released: final-candidate GitHub CI requires the owner's commit/push.**
 
 ## Architecture
 
-The existing React/TypeScript/Vite/Tailwind v4 foundation is preserved. A feature-oriented SPA has six lazy route modules and small shared UI primitives. One local Node HTTP/WebSocket process owns deterministic events, aggregates, rules and incidents. Shared Zod contracts define the transport boundary. URL, component, REST, preferences and stream state have separate owners.
+The existing React/TypeScript/Vite/Tailwind v4 foundation and feature-oriented structure are preserved. Six lazy route modules use small shared UI primitives. One Node HTTP/WebSocket process owns deterministic events, aggregates, rules and incidents; its production entry also serves built SPA assets. Local mode is mutable and loopback-only. Public mode is read-only and bounded. Shared Zod contracts define the transport boundary. URL, component, REST, preferences and stream state have separate owners.
 
 ## Completion matrix
 
@@ -32,16 +32,27 @@ React Router solves routes/URL state; TanStack Query solves REST caching/cancell
 
 ## Verification and performance
 
-`npm run lint`, `npm run typecheck`, `npm test` (14), `npm run build`, `npm run test:e2e` (9), `npm run benchmark` and `git diff --check` passed. The browser route scan had zero axe violations in the tested tag set and zero uncaught page errors. No horizontal page overflow was observed at 375/768 px. See testing.md for coverage and limits.
+Lint, strict types, 23 unit/component/API/security tests and the compiled production build pass. **36/36 browser scenarios pass** across Chromium/Firefox/WebKit, with zero violations in 108 axe/viewport combinations. [Exact coverage](testing.md). Public production smoke passes, including mobile/desktop axe, deep-link reload, static isolation, mutation denial and actual WebSockets. Before/after matrices contain 36 views each with no page overflow. Whitespace, internal documentation links and package/lockfile consistency checks pass.
 
-The 100k workload measured 153.37 ms median / 192.64 ms p95 for local filter/sort/aggregate operations. Browser tests kept the explorer below 35 mounted table rows at a 500-row page size. Main and chart gzip chunks are 121.10 kB and 108.58 kB. These are a baseline, not a universal latency guarantee; conditions are in performance.md.
+The final 100k workload measured **139.08 ms median / 182.34 ms p95** for local filter/sort/aggregate operations. Browser tests keep the explorer below 35 mounted rows at a 500-row page size. A 180-second soak retained 100k server events/300 display events and returned to zero clients after close, with stable sampled post-GC heap. Main and chart gzip chunks are 125.05 kB and 108.58 kB. [Methodology and limits](performance.md).
+
+## Defects corrected and visual outcome
+
+- Fixed Clear/Pause leaving pending stream arrivals, reset reuse of live IDs and late socket callback cleanup.
+- Kept incident drawers synchronized with query refreshes and rejected stale acknowledgement of resolved incidents.
+- Fixed modal Tab/Shift+Tab containment and WebKit pointer-opener focus restoration.
+- Configured browser validation without Zod's eval probe so production CSP stays enforced without Firefox errors.
+- Contained malformed request URLs; added origin checks, public write denial, budgets, caps, heartbeat/backpressure handling, safe static serving and environment validation.
+- Scoped Tailwind detection to source files; removed confirmed-unused starter CSS/images/icons. No new dependencies or architecture rewrite.
+
+The graphite/violet identity, typography, grid and density were already coherent and remain. Visible changes clarify synthetic data, explain public read-only mode and disable unavailable mutations. [Before/after gallery and route findings](release-audit.md) also include mobile dialog, error and connected-feed examples.
 
 ## Git and handoff
 
-Existing baseline: `d7a1abd9cb34ec07d9cee3f57856d0fcfc18a1c4` (Module 02 dashboard shell). There is no new commit reference: the user explicitly reserved commits for themselves. Review the working-tree diff before choosing commits. GitHub CI is configured but unexecuted for this iteration.
+History: Module 02 `d7a1abd9cb34ec07d9cee3f57856d0fcfc18a1c4`, flagship `b54b2963f50ba7d3b6646e32345550b7f5c2c68d`. The flagship's [CI run 40012192211 passed](https://github.com/Kevin1skyrj/pulse-analytics/actions/runs/40012192211). There is no hardening commit SHA yet: the user reserved commits. Review the working-tree diff, commit/push the candidate and require its expanded CI to pass before the recommended `v1.0.0` tag. [Checklist](release-checklist.md) and [draft release notes](release-notes.md).
 
-Run `npm ci --legacy-peer-deps`, then `npm run dev`; open http://127.0.0.1:5173. The README contains a complete demonstration and module-by-module learning sequence. Temporary review servers are stopped at handoff; start the app with that command when ready.
+Run `npm ci --legacy-peer-deps`, then `npm run dev`; open http://127.0.0.1:5173. For compiled production preview use `npm run build` and `npm start` on port 3001 after freeing that port. README retains the learning sequence. The final automated suite owns and stops isolated test processes; the pre-existing development server is not terminated.
 
 ## Remaining boundaries
 
-Local synthetic data only; no hosted API, identity, tenancy, durable database or notification delivery. Rules reset on process restart. Browser preferences do not synchronize across devices. Retention is finite; offset pages may shift during streaming. Reconnection does not replay missed socket messages. Native dragging has button alternatives and grid-based sizing. Accessibility/browser/performance evidence is local and bounded, as detailed in tradeoffs.md.
+Synthetic data only; no deployed API, identity, tenancy, durable database or notification delivery. Rules reset on restart; public data resets daily. Browser preferences do not synchronize across devices. Retention is finite, offset pages can shift during streaming and reconnection has no cursor replay. Manual screen-reader, real-device, extended browser-heap, high-concurrency and external TLS/WSS verification remain unperformed. Docker artifacts exist but the engine was unavailable for build/run. [Safe native Node hosting instructions](deployment.md) are prepared; no external action occurred.

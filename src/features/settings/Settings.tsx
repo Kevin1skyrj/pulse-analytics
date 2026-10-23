@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { infoSchema } from "../../../shared/contracts";
-import { useApi } from "../../services/api";
+import { useApi, useCapabilities } from "../../services/api";
 import { updateSimulation, loadDataset } from "../../services/mutations";
 import { usePreferences, updatePreferences } from "../../state/preferences";
 import { PageTitle, Panel, QueryState } from "../../components/ui";
 export default function Settings() {
+  const canMutate = useCapabilities().data?.mutations === true;
   const preferences = usePreferences(),
     info = useApi("/simulation", infoSchema),
     client = useQueryClient(),
@@ -93,115 +94,122 @@ export default function Settings() {
             </button>
           </form>
         </Panel>
-        <Panel title="Simulation controls">
-          <QueryState
-            pending={info.isPending}
-            error={info.error}
-            retry={() => void info.refetch()}
-          />
-          {info.data && (
-            <form
-              key={JSON.stringify(info.data)}
-              className="panel-body form-grid"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const form = new FormData(e.currentTarget);
-                simulation.mutate({
-                  latency: Number(form.get("latency")),
-                  failEvery: Number(form.get("failEvery")),
-                  streaming: form.has("streaming"),
-                });
-              }}
-            >
-              <label className="field">
-                API latency (0–3000 ms)
-                <input
-                  name="latency"
-                  type="number"
-                  min={0}
-                  max={3000}
-                  required
-                  defaultValue={info.data.latency}
-                />
-              </label>
-              <label className="field">
-                Fail every N API requests (0 = off)
-                <input
-                  name="failEvery"
-                  type="number"
-                  min={0}
-                  max={100}
-                  required
-                  defaultValue={info.data.failEvery}
-                />
-              </label>
-              <label className="check-label">
-                <input
-                  name="streaming"
-                  type="checkbox"
-                  defaultChecked={info.data.streaming}
-                />
-                Enable WebSocket stream
-              </label>
-              <p className="muted text-xs">
-                Disabling the stream closes current connections. Re-enable it to
-                exercise reconnection recovery. Settings remain reachable during
-                simulated API failures.
+        <fieldset disabled={!canMutate} className="min-w-0">
+          <legend className="sr-only">Simulation controls</legend>
+          <Panel title="Simulation controls">
+            <QueryState
+              pending={info.isPending}
+              error={info.error}
+              retry={() => void info.refetch()}
+            />
+            {info.data && (
+              <form
+                key={JSON.stringify(info.data)}
+                className="panel-body form-grid"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = new FormData(e.currentTarget);
+                  simulation.mutate({
+                    latency: Number(form.get("latency")),
+                    failEvery: Number(form.get("failEvery")),
+                    streaming: form.has("streaming"),
+                  });
+                }}
+              >
+                <label className="field">
+                  API latency (0–3000 ms)
+                  <input
+                    name="latency"
+                    type="number"
+                    min={0}
+                    max={3000}
+                    required
+                    defaultValue={info.data.latency}
+                  />
+                </label>
+                <label className="field">
+                  Fail every N API requests (0 = off)
+                  <input
+                    name="failEvery"
+                    type="number"
+                    min={0}
+                    max={100}
+                    required
+                    defaultValue={info.data.failEvery}
+                  />
+                </label>
+                <label className="check-label">
+                  <input
+                    name="streaming"
+                    type="checkbox"
+                    defaultChecked={info.data.streaming}
+                  />
+                  Enable WebSocket stream
+                </label>
+                <p className="muted text-xs">
+                  Disabling the stream closes current connections. Re-enable it
+                  to exercise reconnection recovery. Settings remain reachable
+                  during simulated API failures.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    className="button primary"
+                    disabled={simulation.isPending}
+                  >
+                    Apply simulation
+                  </button>
+                  <button
+                    type="button"
+                    className="button"
+                    onClick={() =>
+                      simulation.mutate({
+                        latency: 120,
+                        failEvery: 0,
+                        streaming: true,
+                      })
+                    }
+                  >
+                    Reset conditions
+                  </button>
+                </div>
+              </form>
+            )}
+          </Panel>
+        </fieldset>
+        <fieldset disabled={!canMutate} className="min-w-0">
+          <legend className="sr-only">Dataset laboratory</legend>
+          <Panel title="Dataset laboratory">
+            <div className="panel-body form-grid">
+              <p className="muted text-sm">
+                Seed 20261024 · fixed starting clock 24 Oct 2026, 12:00 UTC ·
+                48-hour history. Loading a dataset resets the simulation clock
+                and incident history. Rules stay in memory until server restart.
+              </p>
+              <p>
+                Retained events:{" "}
+                <strong>{info.data?.size.toLocaleString() || "—"}</strong>
               </p>
               <div className="flex flex-wrap gap-2">
-                <button
-                  className="button primary"
-                  disabled={simulation.isPending}
-                >
-                  Apply simulation
-                </button>
-                <button
-                  type="button"
-                  className="button"
-                  onClick={() =>
-                    simulation.mutate({
-                      latency: 120,
-                      failEvery: 0,
-                      streaming: true,
-                    })
-                  }
-                >
-                  Reset conditions
-                </button>
+                {[5000, 100000, 0].map((size) => (
+                  <button
+                    className="button"
+                    key={size}
+                    disabled={dataset.isPending}
+                    onClick={() => dataset.mutate(size)}
+                  >
+                    {size
+                      ? `Load ${size.toLocaleString()}`
+                      : "Load empty dataset"}
+                  </button>
+                ))}
               </div>
-            </form>
-          )}
-        </Panel>
-        <Panel title="Dataset laboratory">
-          <div className="panel-body form-grid">
-            <p className="muted text-sm">
-              Seed 20261024 · fixed starting clock 24 Oct 2026, 12:00 UTC ·
-              48-hour history. Loading a dataset resets the simulation clock and
-              incident history. Rules stay in memory until server restart.
-            </p>
-            <p>
-              Retained events:{" "}
-              <strong>{info.data?.size.toLocaleString() || "—"}</strong>
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {[5000, 100000, 0].map((size) => (
-                <button
-                  className="button"
-                  key={size}
-                  disabled={dataset.isPending}
-                  onClick={() => dataset.mutate(size)}
-                >
-                  {size
-                    ? `Load ${size.toLocaleString()}`
-                    : "Load empty dataset"}
-                </button>
-              ))}
+              <p className="text-xs muted">
+                Pause the stream before loading an empty dataset to keep it
+                empty.
+              </p>
             </div>
-            <p className="text-xs muted">
-              Pause the stream before loading an empty dataset to keep it empty.
-            </p>
-          </div>
-        </Panel>
+          </Panel>
+        </fieldset>
         <Panel title="Keyboard & workflow">
           <dl className="panel-body details">
             <dt>Ctrl / ⌘ + K</dt>
