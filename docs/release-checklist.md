@@ -21,7 +21,7 @@
 ## Mandatory owner-controlled release gate
 
 - [ ] Review the working-tree diff and local evidence; create focused commits and push the branch.
-- [ ] Validate the expanded **Pulse quality** workflow on the exact final candidate SHA. Record that SHA and successful run URL here. Baseline [run 40012192211](https://github.com/Kevin1skyrj/pulse-analytics/actions/runs/40012192211) is green but cannot validate new changes.
+- [ ] Validate the basic **Pulse quality** workflow (lint, unit tests, TypeScript and build) on the final candidate SHA. Record that SHA and run URL here. Browser, smoke, benchmark and soak checks are optional local checks; basic CI does not validate them.
 - [ ] Finalize package and lockfile version as `1.0.0` and remove draft wording only when ready; run the same gates on that final commit. Metadata changes still need a matching final CI run.
 - [ ] Merge/release through the owner's chosen workflow; create the recommended annotated `v1.0.0` tag at the verified release commit and publish reviewed release notes.
 
