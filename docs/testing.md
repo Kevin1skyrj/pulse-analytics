@@ -42,7 +42,7 @@ Twelve scenarios run on each of Chromium, Firefox and WebKit (36 tests):
 11. Secondary sorting, columns and selection in all engines; clipboard permission/readback **only in Chromium**, because permission support differs across engines.
 12. Native desktop drag, keyboard width/reorder alternatives and default-layout restoration.
 
-One worker shares one in-memory test service. Each scenario freezes streaming, disables failures and loads 5,000 events. Rules persist within a run, so tests use unique names. Playwright starts a fresh **compiled** local-mode server on port 4175 and stops it afterwards; it refuses to reuse another process. Development HMR and user investigations stay outside release tests. Ports 4174/4175 must be free. Run `npx playwright install firefox webkit` locally with installed Google Chrome; CI installs all three bundled engines with OS dependencies. WebKit on Windows is Playwright's engine, not physical Safari/iOS.
+One worker shares one in-memory test service. Each scenario freezes streaming, disables failures and loads 5,000 events. Rules persist within a run, so tests use unique names. Playwright starts a fresh **compiled** local-mode server on port 4175 and stops it afterwards; it refuses to reuse another process. Development HMR and user investigations stay outside release tests. Ports 4174/4175 must be free. Run `npx playwright install firefox webkit` locally with installed Google Chrome; CI uses the official Playwright image with all three bundled engines and OS dependencies preinstalled. WebKit on Windows is Playwright's engine, not physical Safari/iOS.
 
 ## Visual evidence
 
@@ -62,6 +62,10 @@ The sandbox initially blocked filesystem/socket operations; successful checks ra
 
 ## CI and limits
 
-The committed flagship `b54b2963f50ba7d3b6646e32345550b7f5c2c68d` passed [GitHub Actions run 40012192211](https://github.com/Kevin1skyrj/pulse-analytics/actions/runs/40012192211). That is baseline evidence only. The expanded workflow runs lint, types, unit tests, build, all three engines, public smoke, benchmark and the three-minute soak, uploading failure traces and smoke/soak reports. **Final-candidate GitHub CI awaits the owner's commit/push.**
+The release candidate `f2996f1317380fa1a3e256c11d0a88b7711adb3e` passed both the [branch run 40017479701](https://github.com/Kevin1skyrj/pulse-analytics/actions/runs/40017479701) and [pull-request run 40017560360](https://github.com/Kevin1skyrj/pulse-analytics/actions/runs/40017560360). The expanded workflow runs lint, types, unit tests, build, all three engines, public smoke, benchmark and the three-minute soak, uploading failure traces and smoke/soak reports.
+
+The subsequent [main run 40018572355](https://github.com/Kevin1skyrj/pulse-analytics/actions/runs/40018572355), at merge commit `1c63d788125ddc7b2b124964cb6be24d9e43d5b7`, contains the same repository tree. Lint, types, all 23 unit/component/API/security tests and build passed. Downloading 119 MB of Playwright Linux dependencies from the Ubuntu mirror then consumed the remaining job time; GitHub cancelled the job at its 20-minute limit before browser tests ran.
+
+The workflow now uses `mcr.microsoft.com/playwright:v1.64.1-noble`, following [Playwright's container CI guidance](https://playwright.dev/docs/ci#via-containers), and removes the per-run browser/OS installation step. Node 22, all quality gates and the 20-minute job limit remain. When upgrading Playwright, update the container tag alongside the version resolved in `package-lock.json`; mismatched versions can leave browser executables unavailable. **The updated container workflow still needs the owner's commit/push and a successful GitHub run.**
 
 No formal WCAG certification, NVDA/VoiceOver session, real-device pass, sustained concurrency load, day-long browser heap study, external HTTPS/WSS deployment or Docker image build is claimed. Heap samples cover one Node process containing server and test client; they do not measure React browser memory. HTTP-loopback smoke does not prove a hosting proxy's TLS configuration. See [performance](performance.md), [accessibility](accessibility.md) and [deployment](deployment.md).
