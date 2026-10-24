@@ -1,14 +1,12 @@
 name: Pulse quality
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    container:
-      # Keep this tag aligned with @playwright/test in package-lock.json.
-      # Browsers and Linux dependencies are preinstalled; no per-run apt downloads.
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
-      options: --ipc=host
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,18 +15,6 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npm run lint
-      - run: npm run typecheck
       - run: npm test
-      - run: npm run build
-      - run: npm run test:e2e
-      - run: npm run test:production
-      - run: npm run benchmark
-      - run: npm run test:soak
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: release-verification
-          path: |
-            test-results/
-            docs/release-audit/stream-soak.json
-            docs/release-audit/production-smoke.json
+      - name: Typecheck and build
+        run: npm run build

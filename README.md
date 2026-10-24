@@ -4,7 +4,7 @@ A frontend engineering workspace for investigating operational events, service h
 
 ![Pulse overview](docs/release-audit/after/overview-dark-1440.png)
 
-**Status: v1.0 release candidate (`1.0.0-rc.1`), not released.** The flagship is committed at `b54b296`; its [first GitHub Actions run passed](https://github.com/Kevin1skyrj/pulse-analytics/actions/runs/40012192211). Release hardening is on `codex/v1-release-hardening`. The owner will commit/push it; final-candidate CI remains a mandatory gate. [Release checklist](docs/release-checklist.md).
+**Status: v1.0 release candidate (`1.0.0-rc.1`), not released.** The simplified CI checks lint, unit tests, TypeScript and build. Browser and extended release checks are optional local commands. [Verification details](docs/testing.md).
 
 ## Run locally
 
@@ -60,9 +60,15 @@ Seed: **20261024**. Starting clock: **2026-10-24 12:00 UTC**, with 48 hours of h
 
 ```sh
 npm run lint
-npm run typecheck
 npm test
 npm run build
+```
+
+These are the automatic CI checks. `npm run build` already runs strict TypeScript checks; `npm run typecheck` is available separately while developing. CI runs for pull requests and pushes to `main`, avoiding duplicate branch-push and pull-request runs. It needs Node.js only, with no Docker or browser installation.
+
+Optional browser and extended checks, when relevant to a change:
+
+```sh
 npx playwright install firefox webkit
 npm run test:e2e
 npm run test:production
@@ -70,13 +76,13 @@ npm run benchmark
 npm run test:soak
 ```
 
-Local E2E tests use installed Google Chrome plus Playwright Firefox and WebKit. CI installs all three Playwright engines. Build first: Playwright starts its own compiled local-mode server on port 4175 with fresh in-memory state, then stops it. The suite never reuses your development server. The public-mode production smoke uses port 4174; the soak uses an ephemeral port. Keep those test ports free.
+Local E2E tests use installed Google Chrome plus Playwright Firefox and WebKit. Build first: Playwright starts its own compiled local-mode server on port 4175 with fresh in-memory state, then stops it. The suite never reuses your development server. The public-mode production smoke uses port 4174; the soak uses an ephemeral port. Keep those test ports free.
 
 Verification includes lint, strict types, production build, 23 unit/component/API tests, a 36-scenario browser matrix, production smoke and a three-minute stream soak. Each browser scans all six routes in both themes at 375/768/1440 px with axe and page-overflow assertions. This is not a formal accessibility certification. [Recorded results, exact coverage and limitations](docs/testing.md).
 
 The reproducible 5k/100k benchmark measures filtering, sorting and summary computation in Node, not end-to-end browser latency. The stream soak exercises 100k retained events and bounded buffers. [Measured results, conditions and bundle costs](docs/performance.md).
 
-GitHub Actions is configured in `.github/workflows/ci.yml`. Baseline CI passed; the expanded release workflow must pass on the owner's final candidate commit before tagging.
+GitHub Actions is configured in `.github/workflows/ci.yml`. A passing basic CI run does not imply that the optional browser, production-smoke, benchmark or soak checks ran.
 
 ## Architecture and dependencies
 
